@@ -1,0 +1,1 @@
+Shift + Command + B : bring up "TSC watch" in VSCode

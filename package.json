@@ -1,0 +1,15 @@
+{
+  "name": "xgl",
+  "version": "0.1.0",
+  "description": "XGL Web game engine",
+  "main": "dist/xgl.js",
+  "types": "dist/xgl.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^3.7.2"
+  }
+}
