@@ -1,6 +1,7 @@
 
 import { GLUtilities, gl} from './gl/gl';
 import { Shader } from './gl/shader';
+import { GLBuffer, AttributeInfo } from './gl/glbuffer';
 
 export class XGLEngine {
 
@@ -8,7 +9,7 @@ export class XGLEngine {
     private _gl: GLUtilities;
     private _shader: Shader;
 
-    private _buffer: WebGLBuffer;
+    private _buffer: GLBuffer;
 
     public constructor () {}
 
@@ -43,19 +44,22 @@ export class XGLEngine {
 
         this._gl.clearFrame();
 
+        const colorPosition = this._shader.getUniformLocation('u_color');
+        gl.uniform4f(colorPosition, 1.0, 0.5, 0.0, 1.0);
 
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(0);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        this._buffer.bind();
+        this._buffer.draw();
 
         requestAnimationFrame(this.loop.bind(this));
     }
 
     private createBuffer():void {
-        this._buffer = gl.createBuffer() as WebGLBuffer;
+        this._buffer = new GLBuffer(3);
+        let positionAttribute = new AttributeInfo();
+        positionAttribute.location = this._shader.getAttributeLocation('a_position');
+        positionAttribute.offset = 0;
+        positionAttribute.size = 3;
+        this._buffer.addAttributeLocation(positionAttribute);
 
         const vertices = [
             // x, y, z
@@ -64,13 +68,9 @@ export class XGLEngine {
             0.5, 0.5, 0
         ];
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(0);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-        gl.disableVertexAttribArray(0);
+        this._buffer.pushBackData(vertices);
+        this._buffer.upload();
+        this._buffer.bind();
     }
 
     private loadShaders():void {
@@ -84,8 +84,10 @@ export class XGLEngine {
 
         let fragmentShaderSource = `
             precision mediump float;
+            uniform vec4 u_color;
+
             void main () {
-                gl_FragColor = vec4(1.0);
+                gl_FragColor = u_color;
             }
         `;
 
