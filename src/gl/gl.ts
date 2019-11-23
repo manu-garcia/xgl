@@ -4,7 +4,7 @@ export let gl: WebGLRenderingContext;
 
 export class GLUtilities {
 
-    public init (elId?: string): HTMLCanvasElement {
+    public init(elId?: string): HTMLCanvasElement {
         let canvas: HTMLCanvasElement;
 
         if (elId !== undefined) {

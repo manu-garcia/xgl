@@ -6,10 +6,10 @@ import { gl } from './gl';
 export class Shader {
     private _name: string;
     private _program: WebGLProgram;
-    private _attributes:{[name:string]: number} = {};
-    private _uniforms:{[name:string]:WebGLUniformLocation} = {};
+    private _attributes: { [name: string]: number } = {};
+    private _uniforms: { [name: string]: WebGLUniformLocation } = {};
 
-    public constructor (name:string, vertexSource: string, fragmentSource: string) {
+    public constructor(name: string, vertexSource: string, fragmentSource: string) {
         this._name = name;
 
         const vertexShader = this.loadShader(vertexSource, gl.VERTEX_SHADER);
@@ -23,7 +23,7 @@ export class Shader {
     /**
      * Use the shaders
      */
-    public use():void {
+    public use(): void {
         gl.useProgram(this._program);
     }
 
@@ -32,12 +32,12 @@ export class Shader {
      * 
      * @param name The name of the attribute to get the location for
      */
-    public getAttributeLocation(name:string): number {
+    public getAttributeLocation(name: string): number {
         if (this._attributes[name] === undefined) {
             throw new Error(`Unable to find attribute ${name} in shader ${this._name}`);
         }
 
-        return this._attributes[name];  
+        return this._attributes[name];
     }
 
     /**
@@ -45,7 +45,7 @@ export class Shader {
      * 
      * @param name The name of the uniform to get the location for
      */
-    public getUniformLocation(name:string): WebGLUniformLocation {
+    public getUniformLocation(name: string): WebGLUniformLocation {
         if (this._uniforms[name] === undefined) {
             throw new Error(`Unable to find uniform ${name} in shader ${this._name}`);
         }
@@ -53,7 +53,7 @@ export class Shader {
         return this._uniforms[name];
     }
 
-    private loadShader(source: string, shaderType: number):WebGLShader {
+    private loadShader(source: string, shaderType: number): WebGLShader {
         const shader = gl.createShader(shaderType) as WebGLShader;
 
         gl.shaderSource(shader, source);
@@ -87,7 +87,7 @@ export class Shader {
     private detectAttributes(): void {
         const attributeCount = gl.getProgramParameter(this._program, gl.ACTIVE_ATTRIBUTES);
 
-        for (let i=0; i<attributeCount; i++) {
+        for (let i = 0; i < attributeCount; i++) {
             const info: WebGLActiveInfo = gl.getActiveAttrib(this._program, i) as WebGLActiveInfo;
 
             if (!info) {
@@ -104,7 +104,7 @@ export class Shader {
     private detectUniforms(): void {
         const uniformCount = gl.getProgramParameter(this._program, gl.ACTIVE_UNIFORMS);
 
-        for (let i=0; i<uniformCount; i++) {
+        for (let i = 0; i < uniformCount; i++) {
             const info: WebGLActiveInfo = gl.getActiveUniform(this._program, i) as WebGLActiveInfo;
 
             if (!info) {

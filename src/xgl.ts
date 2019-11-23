@@ -1,7 +1,6 @@
 
-import { GLUtilities, gl} from './gl/gl';
+import { GLUtilities, gl } from './gl/gl';
 import { Shader } from './gl/shader';
-import { GLBuffer, AttributeInfo } from './gl/glbuffer';
 import { Sprite } from './graphics/sprite';
 import { Matrix4x4 } from './math/matrix4x4';
 
@@ -11,11 +10,11 @@ export class XGLEngine {
     private _gl: GLUtilities;
     private _shader: Shader;
 
-    private _sprite:Sprite;
+    private _sprite: Sprite;
 
-    private _projection:Matrix4x4;
+    private _projection: Matrix4x4;
 
-    public constructor () {}
+    public constructor() { }
 
     public start(): void {
 
@@ -41,7 +40,7 @@ export class XGLEngine {
     /**
      * Resizes to fit the window.
      */
-    public resize (): void {
+    public resize(): void {
         if (this._canvas !== undefined) {
             this._canvas.width = window.innerWidth;
             this._canvas.height = window.innerHeight;
@@ -59,10 +58,10 @@ export class XGLEngine {
         const colorPosition = this._shader.getUniformLocation('u_color');
         gl.uniform4f(colorPosition, 1.0, 0.5, 0.0, 1.0);
 
-        const projectionPosition =  this._shader.getUniformLocation('u_projection');
+        const projectionPosition = this._shader.getUniformLocation('u_projection');
         gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
 
-        const modelLocation =  this._shader.getUniformLocation('u_model');
+        const modelLocation = this._shader.getUniformLocation('u_model');
         gl.uniformMatrix4fv(modelLocation, false, new Float32Array(Matrix4x4.translation(this._sprite.position).data));
 
         this._sprite.draw();
@@ -70,7 +69,7 @@ export class XGLEngine {
         requestAnimationFrame(this.loop.bind(this));
     }
 
-    private loadShaders():void {
+    private loadShaders(): void {
         let vertextShaderSource = `
             attribute vec3 a_position;
             uniform mat4 u_projection;

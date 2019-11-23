@@ -4,7 +4,7 @@ import { Vector3 } from './vector3';
 export class Matrix4x4 {
 
     private _data: number[] = [];
-    
+
     private constructor() {
         // Identity matrix
         this._data = [
@@ -16,21 +16,21 @@ export class Matrix4x4 {
         ];
     }
 
-    public get data():number[] {
+    public get data(): number[] {
         return this._data;
     }
 
-    public static identity():Matrix4x4 {
+    public static identity(): Matrix4x4 {
         return new Matrix4x4();
     }
 
     // orthographic matrix renders all as it if would all be flat
-    public static orthographic(left: number, right:number, bottom:number, top:number, nearClip:number, farClip:number):Matrix4x4 {
+    public static orthographic(left: number, right: number, bottom: number, top: number, nearClip: number, farClip: number): Matrix4x4 {
         const m = new Matrix4x4();
 
-        const lr:number = 1.0 / (left - right);
-        const bt:number = 1.0 / (bottom - top);
-        const nf:number = 1.0 / (nearClip - farClip);
+        const lr: number = 1.0 / (left - right);
+        const bt: number = 1.0 / (bottom - top);
+        const nf: number = 1.0 / (nearClip - farClip);
 
         // Replacing the diagonal 1s
         m._data[0] = -2.0 * lr;
@@ -45,8 +45,8 @@ export class Matrix4x4 {
         return m;
     }
 
-    public static translation (position:Vector3): Matrix4x4{
-        const m:Matrix4x4 = new Matrix4x4();
+    public static translation(position: Vector3): Matrix4x4 {
+        const m: Matrix4x4 = new Matrix4x4();
 
         m._data[12] = position.x;
         m._data[13] = position.y;

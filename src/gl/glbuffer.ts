@@ -29,16 +29,16 @@ export class GLBuffer {
     private _hasAttributeLocation: boolean = false;
 
     // An element would be a set of three coordinates x,y and z
-    private _elementSize:number;
+    private _elementSize: number;
 
-    private _stride:number;
-    private _buffer:WebGLBuffer;
+    private _stride: number;
+    private _buffer: WebGLBuffer;
     private _targetBufferType: number;
-    private _dataType:number;
-    private _mode:number;
-    private _typeSize:number;
+    private _dataType: number;
+    private _mode: number;
+    private _typeSize: number;
 
-    private _data:number[] = [];
+    private _data: number[] = [];
     private _attributes: AttributeInfo[] = [];
 
     /**
@@ -49,7 +49,7 @@ export class GLBuffer {
      * @param targetBufferType : The buffer taget type. Defaults to gl.ARRAY_BUFFER
      * @param mode : The drawing mode of this buffer. Defaults to gl.TRIANGLES
      */
-    public constructor (elementSize: number, dataType:number = gl.FLOAT, targetBufferType:number = gl.ARRAY_BUFFER, mode:number = gl.TRIANGLES) {
+    public constructor(elementSize: number, dataType: number = gl.FLOAT, targetBufferType: number = gl.ARRAY_BUFFER, mode: number = gl.TRIANGLES) {
 
         this._elementSize = elementSize;
         this._dataType = dataType;
@@ -74,7 +74,7 @@ export class GLBuffer {
                 break;
 
             default:
-                throw new Error(`Unrecognised datatype ${this._dataType.toString()}`);   
+                throw new Error(`Unrecognised datatype ${this._dataType.toString()}`);
         }
 
         this._stride = this._elementSize * this._typeSize;
@@ -84,7 +84,7 @@ export class GLBuffer {
     /**
      * Delete the buffer from memory
      */
-    public destroy():void {
+    public destroy(): void {
         gl.deleteBuffer(this._buffer);
     }
 
@@ -93,7 +93,7 @@ export class GLBuffer {
      * 
      * @param normalised : Indicates whther the data should be normalised
      */
-    public bind (normalised: boolean = false): void {
+    public bind(normalised: boolean = false): void {
         gl.bindBuffer(this._targetBufferType, this._buffer);
 
         if (this._hasAttributeLocation) {
@@ -119,7 +119,7 @@ export class GLBuffer {
      * Adds an attribute with the provided information to this buffer
      * @param info The information to be added
      */
-    public addAttributeLocation(info: AttributeInfo):void {
+    public addAttributeLocation(info: AttributeInfo): void {
         this._hasAttributeLocation = true;
         this._attributes.push(info);
     }
@@ -128,7 +128,7 @@ export class GLBuffer {
      * Adds data to this buffer
      * @param data 
      */
-    public pushBackData(data:number[]): void {
+    public pushBackData(data: number[]): void {
         for (let d of data) {
             this._data.push(d);
         }
@@ -137,8 +137,8 @@ export class GLBuffer {
     public upload(): void {
 
         gl.bindBuffer(this._targetBufferType, this._buffer);
-        
-        let bufferData:ArrayBuffer;
+
+        let bufferData: ArrayBuffer;
 
         switch (this._dataType) {
             case gl.FLOAT:
@@ -170,7 +170,7 @@ export class GLBuffer {
                 break;
 
             default:
-                    throw new Error(`Unrecognised datatype ${this._dataType.toString()} when uploading`);   
+                throw new Error(`Unrecognised datatype ${this._dataType.toString()} when uploading`);
         }
 
         gl.bufferData(this._targetBufferType, bufferData, gl.STATIC_DRAW);
@@ -180,11 +180,11 @@ export class GLBuffer {
     /**
      * Draws this buffer
      */
-    public draw (): void {
+    public draw(): void {
         if (this._targetBufferType === gl.ARRAY_BUFFER) {
             gl.drawArrays(this._mode, 0, this._data.length / this._elementSize);
         } else if (this._targetBufferType === gl.ELEMENT_ARRAY_BUFFER) {
-            gl.drawElements(this._mode, this._data.length, this._dataType, 0 );
+            gl.drawElements(this._mode, this._data.length, this._dataType, 0);
         }
     }
 
