@@ -3,21 +3,14 @@ import { gl } from './gl';
 /**
  * Shaders are the programs that run in the GPU (Written in Open GL ES Shader language, ES SL)
  */
-export class Shader {
+export abstract class Shader {
     private _name: string;
     private _program: WebGLProgram;
     private _attributes: { [name: string]: number } = {};
     private _uniforms: { [name: string]: WebGLUniformLocation } = {};
 
-    public constructor(name: string, vertexSource: string, fragmentSource: string) {
+    public constructor(name: string) {
         this._name = name;
-
-        const vertexShader = this.loadShader(vertexSource, gl.VERTEX_SHADER);
-        const fragmentShader = this.loadShader(fragmentSource, gl.FRAGMENT_SHADER);
-
-        this.createProgram(vertexShader, fragmentShader);
-        this.detectAttributes();
-        this.detectUniforms();
     }
 
     /**
@@ -51,6 +44,22 @@ export class Shader {
         }
 
         return this._uniforms[name];
+    }
+
+    /**
+     * 
+     * @param vertexSource 
+     * @param fragmentSource 
+     */
+    protected load(vertexSource: string, fragmentSource: string): void {
+
+        const vertexShader = this.loadShader(vertexSource, gl.VERTEX_SHADER);
+        const fragmentShader = this.loadShader(fragmentSource, gl.FRAGMENT_SHADER);
+
+        this.createProgram(vertexShader, fragmentShader);
+        this.detectAttributes();
+        this.detectUniforms();
+
     }
 
     private loadShader(source: string, shaderType: number): WebGLShader {

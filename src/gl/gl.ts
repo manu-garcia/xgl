@@ -4,7 +4,7 @@ export let gl: WebGLRenderingContext;
 
 export class GLUtilities {
 
-    public init(elId?: string): HTMLCanvasElement {
+    public static init(elId?: string): HTMLCanvasElement {
         let canvas: HTMLCanvasElement;
 
         if (elId !== undefined) {
@@ -27,7 +27,7 @@ export class GLUtilities {
         return canvas;
     }
 
-    public clearFrame(): void {
+    public static clearFrame(): void {
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 }
