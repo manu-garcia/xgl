@@ -33,6 +33,26 @@ export class Vector3 {
         this._z = value;
     }
 
+    /** Returns a vector3 with all components set to 0. */
+    public static get zero(): Vector3 {
+        return new Vector3();
+    }
+
+    /** Returns a vector3 with all components set to 1. */
+    public static get one(): Vector3 {
+        return new Vector3(1, 1, 1);
+    }
+
+    /**
+     * Copies the contents of the provided vector to this vector.
+     * @param vector The vector to be copied.
+     */
+    public copyFrom(vector: Vector3): void {
+        this._x = vector._x;
+        this._y = vector._y;
+        this._z = vector._z;
+    }
+
     public toArray(): number[] {
         return [this._x, this._y, this._z];
     }
