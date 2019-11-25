@@ -3,6 +3,7 @@ import { Matrix4x4 } from "../math/matrix4x4";
 import { Shader } from "../gl/shader";
 import { Scene } from "./scene";
 import { BaseComponent } from "../components/baseComponent";
+import { IComponent } from "../components/IComponent";
 
 export class SimObject {
     private _id: number;
@@ -10,7 +11,7 @@ export class SimObject {
     private _parent: SimObject;
     private _isLoaded: boolean = false;
     private _scene: Scene;
-    private _components: BaseComponent[] = [];
+    private _components: IComponent[] = [];
 
     private _localMatrix: Matrix4x4 = Matrix4x4.identity();
     private _worldMatrix: Matrix4x4 = Matrix4x4.identity();
@@ -70,7 +71,7 @@ export class SimObject {
         return undefined!;
     }
 
-    public addComponent(component: BaseComponent): void {
+    public addComponent(component: IComponent): void {
         this._components.push(component);
 
         component.setOwner(this);

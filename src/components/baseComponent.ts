@@ -1,13 +1,21 @@
 import { SimObject } from '../world/simObject';
 import { Shader } from '../gl/shader';
+import { IComponentBuilder } from './IComponentBuilder';
+import { IComponentData } from './IComponentData';
 
-export abstract class BaseComponent {
+export abstract class BaseComponent implements IComponentBuilder {
+    type: string;
+    buildFromJson(json: any): import("./IComponent").IComponent {
+        throw new Error("Method not implemented.");
+    }
     protected _owner: SimObject;
+    protected _data: IComponentData;
 
     public name: string;
 
-    public constructor(name: string) {
-        this.name = name;
+    public constructor(data: IComponentData) {
+        this._data = data;
+        this.name = data.name;
     }
 
     public get owner(): SimObject {

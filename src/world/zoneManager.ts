@@ -1,48 +1,46 @@
 import { Zone } from "./zone";
-import { TestZone } from "./testZone";
-import { Shader } from '../gl/shader';
+import { Shader } from 'src/gl/shader';
+import { AssetManager, MESSAGE_ASSET_LOADER_ASSET_LOADED } from "../assets/assetManager";
+import { JsonAsset } from "../assets/jsonAssetLoader";
+import { IMessageHandler } from "../message/IMessageHandler";
+import { Message } from "../message/message";
 
-export class ZoneManager {
-
+export class ZoneManager implements IMessageHandler {
     private static _globalZoneID: number = -1;
-    private static _zones: { [id: number]: Zone } = {};
+    // private static _zones: { [id: number]: Zone } = {};
+    private static _registeredZones: { [id: number]: string } = {};
     private static _activeZone: Zone;
+    private static _inst: ZoneManager;
 
     private constructor() {
 
     }
 
-    public static createZone(name: string, description: string): number {
+    public static initialize(): void {
 
-        ZoneManager._globalZoneID++;
+        ZoneManager._inst = new ZoneManager();
 
-        const zone = new Zone(ZoneManager._globalZoneID, name, description);
-        ZoneManager._zones[ZoneManager._globalZoneID] = zone;
-
-        return ZoneManager._globalZoneID;
-    }
-
-    // TODO: Remove this as it is for testing only purposes
-    public static createTestZone(): number {
-
-        ZoneManager._globalZoneID++;
-
-        const zone = new TestZone(ZoneManager._globalZoneID, 'test', 'test zone');
-        ZoneManager._zones[ZoneManager._globalZoneID] = zone;
-
-        return ZoneManager._globalZoneID;
+        // Temporary
+        ZoneManager._registeredZones[0] = "assets/zones/testZone.json";
     }
 
     public static changeZone(id: number): void {
         if (this._activeZone !== undefined) {
             ZoneManager._activeZone.onDeactivated();
             ZoneManager._activeZone.unload();
+            ZoneManager._activeZone = undefined!;
         }
 
-        if (ZoneManager._zones[id] !== undefined) {
-            ZoneManager._activeZone = ZoneManager._zones[id];
-            ZoneManager._activeZone.onActivated();
-            ZoneManager._activeZone.load();
+        if (ZoneManager._registeredZones[id] !== undefined) {
+            if (AssetManager.isAssetLoaded(ZoneManager._registeredZones[id])) {
+                const asset = AssetManager.getAsset(ZoneManager._registeredZones[id]);
+                ZoneManager.loadZone(asset);
+            } else {
+                Message.subscribe(MESSAGE_ASSET_LOADER_ASSET_LOADED + ZoneManager._registeredZones[id], ZoneManager._inst);
+                AssetManager.loadAsset(ZoneManager._registeredZones[id]);
+            }
+        } else {
+            throw new Error(`Zone id: ${id} does not exist`);
         }
     }
 
@@ -57,4 +55,42 @@ export class ZoneManager {
             ZoneManager._activeZone.render(shader);
         }
     }
+
+    public onMessage(message: Message): void {
+        if (message.code.indexOf(MESSAGE_ASSET_LOADER_ASSET_LOADED) !== -1) {
+            const asset = message.context as JsonAsset;
+            ZoneManager.loadZone(asset);
+        }
+    }
+
+    private static loadZone(asset: JsonAsset): void {
+        const zoneData = asset.data;
+
+        let zoneId: number;
+        if (zoneData.id === undefined) {
+            throw new Error(`Zone file format exception. Zone ID not present`);
+        } else {
+            zoneId = Number(zoneData.id);
+        }
+
+        let zoneName: string;
+        if (zoneData.name === undefined) {
+            throw new Error(`Zone file format exception. Zone name not present`);
+        } else {
+            zoneName = String(zoneData.name);
+        }
+
+        let zoneDescription: string = '';
+        if (zoneData.description !== undefined) {
+            zoneDescription = String(zoneData.description);
+        }
+
+        ZoneManager._activeZone = new Zone(zoneId, zoneName, zoneDescription);
+        ZoneManager._activeZone.initialize(zoneData);
+        ZoneManager._activeZone.onActivated();
+        ZoneManager._activeZone.load();
+    }
+
+
+
 }

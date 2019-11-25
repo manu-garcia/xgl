@@ -1,5 +1,8 @@
 import { Scene } from './scene';
 import { Shader } from '../gl/shader';
+import { SimObject } from './simObject';
+import { ComponentManager } from '../components/componentManager';
+import { IComponent } from '../components/IComponent';
 
 export enum ZoneState {
     UNINITIALIZED,
@@ -14,6 +17,7 @@ export class Zone {
     private _scene: Scene;
 
     private _state: ZoneState = ZoneState.UNINITIALIZED;
+    private _globalID: number = -1;
 
     public constructor(id: number, name: string, description: string) {
         this._id = id;
@@ -36,6 +40,18 @@ export class Zone {
 
     public get scene(): Scene {
         return this._scene;
+    }
+
+    public initialize(zoneData: any): void {
+        if (zoneData.objects === undefined) {
+            throw new Error('Zone initialization error objects not present.');
+        }
+
+        for (const o in zoneData.objects) {
+            const obj = zoneData.objects[o];
+
+            this.loadSimObject(obj, this._scene.root);
+        }
     }
 
     public load(): void {
@@ -69,5 +85,38 @@ export class Zone {
 
     public onDeactivated(): void {
 
+    }
+
+    private loadSimObject(dataSection: any, parent: SimObject): void {
+        let name: string = '';
+        if (dataSection.name !== undefined) {
+            name = String(dataSection.name);
+        }
+
+        this._globalID++;
+        const simObject = new SimObject(this._globalID, name, this._scene);
+
+        if (dataSection.transform !== undefined) {
+            simObject.transform.setFromJson(dataSection.transform);
+        }
+
+        if (dataSection.components !== undefined) {
+            for (let c in dataSection.components) {
+                const data = dataSection.components[c];
+                const component = ComponentManager.extractComponent(data);
+                simObject.addComponent(component);
+            }
+        }
+
+        if (dataSection.children !== undefined) {
+            for (const i in dataSection.children) {
+                const obj = dataSection.children[i];
+                this.loadSimObject(obj, simObject);
+            }
+        }
+
+        if (parent !== undefined) {
+            parent.addChild(simObject);
+        }
     }
 }

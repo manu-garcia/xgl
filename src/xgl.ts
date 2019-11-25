@@ -1,15 +1,16 @@
+
 import { mat4 } from 'gl-matrix';
 
 import { GLUtilities, gl } from './gl/gl';
 import { BasicShader } from './gl/shaders/basicShader';
-import { Sprite } from './graphics/sprite';
+import { SpriteComponentBuilder } from './components/spriteComponent';
 import { AssetManager } from './assets/assetManager';
 import { MessageBus } from './message/messageBus';
 import { MaterialManager } from './graphics/materialManager';
 import { Material } from './graphics/material';
 import { Color } from './graphics/color';
 import { ZoneManager } from './world/zoneManager';
-import { ZoneState } from './world/zone';
+import { ComponentManager } from './components/componentManager';
 
 export class XGLEngine {
 
@@ -24,17 +25,19 @@ export class XGLEngine {
 
         this._canvas = GLUtilities.init();
 
+        ComponentManager.registeredBuilder(new SpriteComponentBuilder());
+
         AssetManager.initialize();
+        ZoneManager.initialize();
 
         this._basicShader = new BasicShader();
         this._basicShader.use();
 
         MaterialManager.registerMaterial(new Material('crate', 'assets/textures/test.jpg', new Color(255, 255, 255, 255)));
 
-        const zoneID = ZoneManager.createTestZone();
-
         this._projection = this.createProjection();
-        ZoneManager.changeZone(zoneID);
+
+        ZoneManager.changeZone(0);
 
         this.resize();
         this.loop();
@@ -77,3 +80,4 @@ export class XGLEngine {
         return mat4.ortho(m, 0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
     }
 }
+

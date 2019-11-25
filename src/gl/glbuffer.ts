@@ -112,7 +112,7 @@ export class GLBuffer {
             gl.disableVertexAttribArray(attr.location);
         }
 
-        gl.bindBuffer(this._targetBufferType, this._buffer);
+        gl.bindBuffer(this._targetBufferType, undefined!);
     }
 
     /**

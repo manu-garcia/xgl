@@ -42,17 +42,17 @@ export class Transform {
      * needs only to provide the y value (1) as 0 is the default for x and z.
      * @param json The JSON to set from.
      */
-    // public setFromJson(json: any): void {
-    //     if (json.position !== undefined) {
-    //         this.position.setFromJson(json.position);
-    //     }
+    public setFromJson(json: any): void {
+        if (json.position !== undefined) {
+            this.position.setFromJson(json.position);
+        }
 
-    //     if (json.rotation !== undefined) {
-    //         this.rotation.setFromJson(json.rotation);
-    //     }
+        if (json.rotation !== undefined) {
+            this.rotation.setFromJson(json.rotation);
+        }
 
-    //     if (json.scale !== undefined) {
-    //         this.scale.setFromJson(json.scale);
-    //     }
-    // }
+        if (json.scale !== undefined) {
+            this.scale.setFromJson(json.scale);
+        }
+    }
 }
