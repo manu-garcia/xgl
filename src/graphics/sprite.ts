@@ -16,8 +16,6 @@ export class Sprite {
     private _materialName: string;
     private _material: Material;
 
-    public position: Vector3 = new Vector3();
-
     public constructor(name: string, materialName: string, width: number = 100, height: number = 100) {
         this._name = name;
         this._width = width;
@@ -75,10 +73,10 @@ export class Sprite {
 
     }
 
-    public draw(shader: Shader): void {
+    public draw(shader: Shader, model: Matrix4x4): void {
 
         const modelLocation = shader.getUniformLocation('u_model');
-        gl.uniformMatrix4fv(modelLocation, false, new Float32Array(Matrix4x4.translation(this.position).data));
+        gl.uniformMatrix4fv(modelLocation, false, model.toFloat32Array());
 
         const colorLocation = shader.getUniformLocation('u_tint');
         // Orange tint

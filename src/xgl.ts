@@ -8,13 +8,13 @@ import { MessageBus } from './message/messageBus';
 import { MaterialManager } from './graphics/materialManager';
 import { Material } from './graphics/material';
 import { Color } from './graphics/color';
+import { ZoneManager } from './world/zoneManager';
+import { ZoneState } from './world/zone';
 
 export class XGLEngine {
 
     private _canvas: HTMLCanvasElement;
     private _basicShader: BasicShader;
-
-    private _sprite: Sprite;
 
     private _projection: mat4;
 
@@ -31,12 +31,10 @@ export class XGLEngine {
 
         MaterialManager.registerMaterial(new Material('crate', 'assets/textures/test.jpg', new Color(255, 255, 255, 255)));
 
-        this._projection = this.createProjection();
+        const zoneID = ZoneManager.createTestZone();
 
-        this._sprite = new Sprite('test', 'crate');
-        this._sprite.position.x = 0;
-        this._sprite.position.y = 0;
-        this._sprite.load();
+        this._projection = this.createProjection();
+        ZoneManager.changeZone(zoneID);
 
         this.resize();
         this.loop();
@@ -61,12 +59,14 @@ export class XGLEngine {
 
         MessageBus.update(0);
 
+        ZoneManager.update(0);
+
         GLUtilities.clearFrame();
+
+        ZoneManager.render(this._basicShader);
 
         const projectionPosition = this._basicShader.getUniformLocation('u_projection');
         gl.uniformMatrix4fv(projectionPosition, false, this._projection);
-
-        this._sprite.draw(this._basicShader);
 
         requestAnimationFrame(this.loop.bind(this));
     }

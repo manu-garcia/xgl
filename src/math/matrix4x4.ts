@@ -59,21 +59,77 @@ export class Matrix4x4 {
         return m;
     }
 
-    // 0..PI -> Half Rotation
-    // 0..2*PI -> Full Rotation
-    public static rotationZ(angleRadians: number): Matrix4x4 {
-        const m: Matrix4x4 = new Matrix4x4();
+    /**
+     * Creates a rotation matrix on the X axis from the provided angle in radians.
+     * @param angleInRadians The angle in radians.
+     */
+    public static rotationX(angleInRadians: number): Matrix4x4 {
+        let m = new Matrix4x4();
 
-        const c = Math.cos(angleRadians);
-        const s = Math.sin(angleRadians);
+        let c = Math.cos(angleInRadians);
+        let s = Math.sin(angleInRadians);
+
+        m._data[5] = c;
+        m._data[6] = s;
+        m._data[9] = -s;
+        m._data[10] = c;
+
+        return m;
+    }
+
+    /**
+     * Creates a rotation matrix on the Y axis from the provided angle in radians.
+     * @param angleInRadians The angle in radians.
+     */
+    public static rotationY(angleInRadians: number): Matrix4x4 {
+        let m = new Matrix4x4();
+
+        let c = Math.cos(angleInRadians);
+        let s = Math.sin(angleInRadians);
+
+        m._data[0] = c;
+        m._data[2] = -s;
+        m._data[8] = s;
+        m._data[10] = c;
+
+        return m;
+    }
+
+    /**
+     * Creates a rotation matrix on the Z axis from the provided angle in radians.
+     * 
+     *  0..PI -> Half Rotation
+     *  0..2*PI -> Full Rotation
+     * 
+     * @param angleInRadians The angle in radians.
+     */
+    public static rotationZ(angleInRadians: number): Matrix4x4 {
+        let m = new Matrix4x4();
+
+        let c = Math.cos(angleInRadians);
+        let s = Math.sin(angleInRadians);
 
         m._data[0] = c;
         m._data[1] = s;
-
-        m._data[5] = -s;
-        m._data[6] = c;
+        m._data[4] = -s;
+        m._data[5] = c;
 
         return m;
+    }
+
+    /**
+     * Creates a rotation matrix from the provided angles in radians.
+     * @param xRadians The angle in radians on the X axis. 
+     * @param yRadians The angle in radians on the Y axis. 
+     * @param zRadians The angle in radians on the Z axis. 
+     */
+    public static rotationXYZ(xRadians: number, yRadians: number, zRadians: number): Matrix4x4 {
+        let rx = Matrix4x4.rotationX(xRadians);
+        let ry = Matrix4x4.rotationY(yRadians);
+        let rz = Matrix4x4.rotationZ(zRadians);
+
+        // ZYX
+        return Matrix4x4.multiply(Matrix4x4.multiply(rz, ry), rx);
     }
 
     /**
@@ -149,5 +205,20 @@ export class Matrix4x4 {
         m._data[15] = b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33;
 
         return m;
+    }
+
+    /** Returns the data of this matrix as a Float32Array. */
+    public toFloat32Array(): Float32Array {
+        return new Float32Array(this._data);
+    }
+
+    /**
+     * Creates a copy of matrix m.
+     * @param m The matrix to copy.
+     */
+    public copyFrom(m: Matrix4x4): void {
+        for (let i = 0; i < 16; ++i) {
+            this._data[i] = m._data[i];
+        }
     }
 }

@@ -2,6 +2,7 @@ import { Transform } from "../math/transform";
 import { Matrix4x4 } from "../math/matrix4x4";
 import { Shader } from "../gl/shader";
 import { Scene } from "./scene";
+import { BaseComponent } from "../components/baseComponent";
 
 export class SimObject {
     private _id: number;
@@ -9,6 +10,7 @@ export class SimObject {
     private _parent: SimObject;
     private _isLoaded: boolean = false;
     private _scene: Scene;
+    private _components: BaseComponent[] = [];
 
     private _localMatrix: Matrix4x4 = Matrix4x4.identity();
     private _worldMatrix: Matrix4x4 = Matrix4x4.identity();
@@ -31,7 +33,7 @@ export class SimObject {
         return this._parent;
     }
 
-    public get worldMAtrix(): Matrix4x4 {
+    public get worldMatrix(): Matrix4x4 {
         return this._worldMatrix;
     }
 
@@ -68,8 +70,18 @@ export class SimObject {
         return undefined!;
     }
 
+    public addComponent(component: BaseComponent): void {
+        this._components.push(component);
+
+        component.setOwner(this);
+    }
+
     public load(): void {
         this._isLoaded = true;
+
+        for (let c of this._components) {
+            c.load();
+        }
 
         for (let child of this._children) {
             child.load();
@@ -77,12 +89,26 @@ export class SimObject {
     }
 
     public update(time: number): void {
+
+        // Dont do that on the update MSInputMethodContext.Only when it changes.For now in here
+        this._localMatrix = this.transform.getTransformationMatrix();
+        this.updateWorldMatrix((this.parent !== undefined) ? this.parent.worldMatrix : undefined!);
+
+        for (let c of this._components) {
+            c.update(time);
+        }
+
         for (let child of this._children) {
             child.update(time);
         }
     }
 
     public render(shader: Shader): void {
+
+        for (let c of this._components) {
+            c.render(shader);
+        }
+
         for (let child of this._children) {
             child.render(shader);
         }
@@ -90,5 +116,14 @@ export class SimObject {
 
     protected onAdded(scene: Scene): void {
         this._scene = scene;
+    }
+
+    private updateWorldMatrix(parentWorldMatrix: Matrix4x4): void {
+        if (parentWorldMatrix !== undefined) {
+            this._worldMatrix = Matrix4x4.multiply(parentWorldMatrix, this._localMatrix);
+        } else {
+            this.worldMatrix.copyFrom(this._localMatrix);
+        }
+
     }
 }
