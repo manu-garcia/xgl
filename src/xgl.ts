@@ -11,6 +11,8 @@ import { Material } from './graphics/material';
 import { Color } from './graphics/color';
 import { ZoneManager } from './world/zoneManager';
 import { ComponentManager } from './components/componentManager';
+import { BehaviorManager } from './behaviors/behaviorManager';
+import { RotationBehaviorBuilder } from './behaviors/rotationBehavior';
 
 export class XGLEngine {
 
@@ -26,6 +28,9 @@ export class XGLEngine {
         this._canvas = GLUtilities.init();
 
         ComponentManager.registeredBuilder(new SpriteComponentBuilder());
+
+        BehaviorManager.registeredBuilder(new RotationBehaviorBuilder());
+
 
         AssetManager.initialize();
         ZoneManager.initialize();
