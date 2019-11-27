@@ -1,5 +1,4 @@
 
-
 export let gl: WebGLRenderingContext;
 
 export class GLUtilities {
@@ -22,7 +21,11 @@ export class GLUtilities {
             throw new Error('Unable to get the rendering context.')
         }
 
-        gl.clearColor(0, 0, 0, 1);
+        gl.clearColor(0, 0, 0.5, 1);
+
+        // Allows transparency in sprites
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         return canvas;
     }

@@ -6,7 +6,6 @@ export class ComponentManager {
     private static _registeredBuilders: { [type: string]: IComponentBuilder } = {};
 
     public static registeredBuilder(builder: IComponentBuilder): void {
-        console.log('REGISTETING.............');
         ComponentManager._registeredBuilders[builder.type] = builder;
     }
 

@@ -4,6 +4,7 @@ import { mat4 } from 'gl-matrix';
 import { GLUtilities, gl } from './gl/gl';
 import { BasicShader } from './gl/shaders/basicShader';
 import { SpriteComponentBuilder } from './components/spriteComponent';
+import { AnimatedSpriteComponentBuilder } from './components/animatedSpriteComponent';
 import { AssetManager } from './assets/assetManager';
 import { MessageBus } from './message/messageBus';
 import { MaterialManager } from './graphics/materialManager';
@@ -21,6 +22,8 @@ export class XGLEngine {
 
     private _projection: mat4;
 
+    private _previousTime: number = 0;
+
     public constructor() { }
 
     public start(): void {
@@ -28,6 +31,7 @@ export class XGLEngine {
         this._canvas = GLUtilities.init();
 
         ComponentManager.registeredBuilder(new SpriteComponentBuilder());
+        ComponentManager.registeredBuilder(new AnimatedSpriteComponentBuilder());
 
         BehaviorManager.registeredBuilder(new RotationBehaviorBuilder());
 
@@ -39,6 +43,7 @@ export class XGLEngine {
         this._basicShader.use();
 
         MaterialManager.registerMaterial(new Material('crate', 'assets/textures/test.jpg', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('girl', 'assets/textures/girl.png', new Color(255, 255, 255, 255)));
 
         this._projection = this.createProjection();
 
@@ -64,11 +69,20 @@ export class XGLEngine {
     }
 
     private loop(): void {
+        this.update();
+        this.render();
+    }
 
-        MessageBus.update(0);
+    private update(): void {
+        const delta = performance.now() - this._previousTime;
 
-        ZoneManager.update(0);
+        MessageBus.update(delta);
+        ZoneManager.update(delta);
 
+        this._previousTime = performance.now();
+    }
+
+    private render(): void {
         GLUtilities.clearFrame();
 
         ZoneManager.render(this._basicShader);

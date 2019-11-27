@@ -4,7 +4,6 @@ import { BaseComponent } from "./baseComponent";
 import { IComponent } from "./IComponent";
 import { IComponentData } from './IComponentData';
 import { IComponentBuilder } from './IComponentBuilder';
-import { ComponentManager } from './componentManager';
 
 export class SpriteComponentData implements IComponentData {
     public name: string;

@@ -7,7 +7,6 @@ import { Message } from "../message/message";
 
 export class ZoneManager implements IMessageHandler {
     private static _globalZoneID: number = -1;
-    // private static _zones: { [id: number]: Zone } = {};
     private static _registeredZones: { [id: number]: string } = {};
     private static _activeZone: Zone;
     private static _inst: ZoneManager;
@@ -90,7 +89,4 @@ export class ZoneManager implements IMessageHandler {
         ZoneManager._activeZone.onActivated();
         ZoneManager._activeZone.load();
     }
-
-
-
 }

@@ -44,14 +44,13 @@ export class GLBuffer {
     /**
      * Creates a new GL buffer
      * 
-     * @param elementSize : The size of each element in this buffer.
      * @param dataType : Data type of this buffer. Defaults to gl.FLOAT
      * @param targetBufferType : The buffer taget type. Defaults to gl.ARRAY_BUFFER
      * @param mode : The drawing mode of this buffer. Defaults to gl.TRIANGLES
      */
-    public constructor(elementSize: number, dataType: number = gl.FLOAT, targetBufferType: number = gl.ARRAY_BUFFER, mode: number = gl.TRIANGLES) {
+    public constructor(dataType: number = gl.FLOAT, targetBufferType: number = gl.ARRAY_BUFFER, mode: number = gl.TRIANGLES) {
 
-        this._elementSize = elementSize;
+        this._elementSize = 0;
         this._dataType = dataType;
         this._targetBufferType = targetBufferType;
         this._mode = mode;
@@ -77,7 +76,6 @@ export class GLBuffer {
                 throw new Error(`Unrecognised datatype ${this._dataType.toString()}`);
         }
 
-        this._stride = this._elementSize * this._typeSize;
         this._buffer = gl.createBuffer() as WebGLBuffer;
     }
 
@@ -121,7 +119,22 @@ export class GLBuffer {
      */
     public addAttributeLocation(info: AttributeInfo): void {
         this._hasAttributeLocation = true;
+
+        info.offset = this._elementSize;
         this._attributes.push(info);
+        this._elementSize += info.size;
+
+        this._stride = this._elementSize * this._typeSize;
+    }
+
+    /**
+     * Replaces the current data in this budder with the provided data
+     * 
+     * @param data : the data to be set to this buffer
+     */
+    public setData(data: number[]): void {
+        this.clearData();
+        this.pushBackData(data);
     }
 
     /**
@@ -132,6 +145,13 @@ export class GLBuffer {
         for (let d of data) {
             this._data.push(d);
         }
+    }
+
+    /**
+     * Clears out all data in this buffer
+     */
+    public clearData(): void {
+        this._data.length = 0;
     }
 
     public upload(): void {

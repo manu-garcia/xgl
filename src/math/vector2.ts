@@ -23,6 +23,21 @@ export class Vector2 {
         this._y = value;
     }
 
+    /** Returns a vector2 with all components set to 0. */
+    public static get zero(): Vector2 {
+        return new Vector2();
+    }
+
+    /** Returns a vector2 with all components set to 1. */
+    public static get one(): Vector2 {
+        return new Vector2(1, 1);
+    }
+
+    public copyFrom(v: Vector2): void {
+        this._x = v._x;
+        this._y = v._y;
+    }
+
     public toArray(): number[] {
         return [this._x, this._y];
     }
