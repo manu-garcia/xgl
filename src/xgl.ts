@@ -14,9 +14,13 @@ import { ZoneManager } from './world/zoneManager';
 import { ComponentManager } from './components/componentManager';
 import { BehaviorManager } from './behaviors/behaviorManager';
 import { RotationBehaviorBuilder } from './behaviors/rotationBehavior';
+import { KeyboardMovementBehaviorBuilder } from './behaviors/keyboardMovementBehavior';
+import { InputManager, MouseContext } from './input/inputManager';
+import { IMessageHandler } from './message/IMessageHandler';
+import { Message } from './message/message';
+import { AudioManager } from './audio/audioManager';
 
-export class XGLEngine {
-
+export class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
     private _basicShader: BasicShader;
 
@@ -34,16 +38,21 @@ export class XGLEngine {
         ComponentManager.registeredBuilder(new AnimatedSpriteComponentBuilder());
 
         BehaviorManager.registeredBuilder(new RotationBehaviorBuilder());
-
+        BehaviorManager.registeredBuilder(new KeyboardMovementBehaviorBuilder());
 
         AssetManager.initialize();
+        InputManager.initialize();
         ZoneManager.initialize();
+
+        Message.subscribe('MOUSE_UP', this);
 
         this._basicShader = new BasicShader();
         this._basicShader.use();
 
         MaterialManager.registerMaterial(new Material('crate', 'assets/textures/test.jpg', new Color(255, 255, 255, 255)));
         MaterialManager.registerMaterial(new Material('girl', 'assets/textures/girl.png', new Color(255, 255, 255, 255)));
+
+        AudioManager.loadSoundFile('croack', 'assets/sounds/croack.mp3', false);
 
         this._projection = this.createProjection();
 
@@ -65,6 +74,15 @@ export class XGLEngine {
             gl.viewport(0, 0, this._canvas.width, this._canvas.height);
             this._projection = this.createProjection();
 
+        }
+    }
+
+    public onMessage(message: Message): void {
+        if (message.code === 'MOUSE_UP') {
+            const context = message.context as MouseContext;
+            document.title = `Pos: [${context.position.x}], [${context.position.y}]`;
+
+            // AudioManager.playSound('croack');
         }
     }
 
