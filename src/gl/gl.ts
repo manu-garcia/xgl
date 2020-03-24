@@ -17,8 +17,11 @@ export class GLUtilities {
         }
 
         gl = canvas.getContext('webgl') as WebGLRenderingContext;
-        if (gl === undefined) {
-            throw new Error('Unable to get the rendering context.')
+        if (gl === undefined || gl === null) {
+            gl = canvas.getContext('experimental-webgl') as WebGLRenderingContext;
+            if (gl === undefined || gl === null) {
+                throw new Error('Unable to get the rendering context.')
+            }
         }
 
         gl.clearColor(0, 0, 0.5, 1);

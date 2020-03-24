@@ -4,6 +4,7 @@ import { IMessageHandler } from '../message/IMessageHandler';
 import { Message } from '../message/message';
 import { MESSAGE_ASSET_LOADER_ASSET_LOADED, AssetManager } from '../assets/assetManager';
 import { ImageAsset } from '../assets/imageAssetLoader';
+import { MaterialManager } from './materialManager';
 
 class UVInfo {
     public min: Vector2;
@@ -67,11 +68,16 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
 
     public load(): void {
         super.load();
+
+        if (!this._assetLoaded) {
+            this.setupFromMaterial();
+        }
     }
 
     public update(time: number): void {
 
-        if (this._assetLoaded !== true) {
+        if (!this._assetLoaded) {
+            this.setupFromMaterial();
             return;
         }
 
@@ -143,6 +149,21 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
 
             this._frameUVs.push(new UVInfo(min, max));
 
+        }
+    }
+
+    // Fixes race condition where texture has been cached
+    private setupFromMaterial() {
+        if (!this._assetLoaded) {
+            const material = MaterialManager.getMaterial(this._materialName);
+            if (material.diffuseTexture.isLoaded) {
+                if (AssetManager.isAssetLoaded(material.diffuseTextureName)) {
+                    this._assetWidth = material.diffuseTexture.width;
+                    this._assetHeight = material.diffuseTexture.height;
+                    this._assetLoaded = true;
+                    this._calculateUVs();
+                }
+            }
         }
     }
 }
