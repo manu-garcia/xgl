@@ -1,3 +1,5 @@
+import { Vector2 } from "./vector2";
+
 export class Vector3 {
     private _x: number;
     private _y: number;
@@ -41,6 +43,30 @@ export class Vector3 {
     /** Returns a vector3 with all components set to 1. */
     public static get one(): Vector3 {
         return new Vector3(1, 1, 1);
+    }
+
+    public static distance(a: Vector3, b: Vector3): number {
+        let diff = a.clone().subtract(b);
+
+        return Math.sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+    }
+
+    public set(x?: number, y?: number, z?: number) {
+        if (x !== undefined) {
+            this._x = x;
+        }
+
+        if (y !== undefined) {
+            this._y = y;
+        }
+
+        if (z !== undefined) {
+            this._z = z;
+        }
+    }
+
+    public equals(v: Vector3): boolean {
+        return this.x === v.x && this.y === v.y && this.z === v.z;
     }
 
     /**
@@ -108,5 +134,13 @@ export class Vector3 {
         this._z /= v._z;
 
         return this;
+    }
+
+    public clone(): Vector3 {
+        return new Vector3(this._x, this._y, this._z);
+    }
+
+    public toVector2(): Vector2 {
+        return new Vector2(this._x, this._y);
     }
 }

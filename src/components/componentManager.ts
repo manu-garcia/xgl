@@ -5,7 +5,7 @@ export class ComponentManager {
 
     private static _registeredBuilders: { [type: string]: IComponentBuilder } = {};
 
-    public static registeredBuilder(builder: IComponentBuilder): void {
+    public static registerBuilder(builder: IComponentBuilder): void {
         ComponentManager._registeredBuilders[builder.type] = builder;
     }
 

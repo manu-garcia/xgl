@@ -19,6 +19,8 @@ import { InputManager, MouseContext } from './input/inputManager';
 import { IMessageHandler } from './message/IMessageHandler';
 import { Message } from './message/message';
 import { AudioManager } from './audio/audioManager';
+import { CollisionComponentBuilder } from './components/collisionComponent';
+import { CollisionManager } from './collision/CollisionManager';
 
 export class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
@@ -34,11 +36,12 @@ export class XGLEngine implements IMessageHandler {
 
         this._canvas = GLUtilities.init();
 
-        ComponentManager.registeredBuilder(new SpriteComponentBuilder());
-        ComponentManager.registeredBuilder(new AnimatedSpriteComponentBuilder());
+        ComponentManager.registerBuilder(new SpriteComponentBuilder());
+        ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
+        ComponentManager.registerBuilder(new CollisionComponentBuilder());
 
-        BehaviorManager.registeredBuilder(new RotationBehaviorBuilder());
-        BehaviorManager.registeredBuilder(new KeyboardMovementBehaviorBuilder());
+        BehaviorManager.registerBuilder(new RotationBehaviorBuilder());
+        BehaviorManager.registerBuilder(new KeyboardMovementBehaviorBuilder());
 
         AssetManager.initialize();
         InputManager.initialize();
@@ -96,6 +99,7 @@ export class XGLEngine implements IMessageHandler {
 
         MessageBus.update(delta);
         ZoneManager.update(delta);
+        CollisionManager.update(delta);
 
         this._previousTime = performance.now();
     }

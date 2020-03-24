@@ -5,7 +5,7 @@ export class BehaviorManager {
 
     private static _registeredBuilders: { [type: string]: IBehaviorBuilder } = {};
 
-    public static registeredBuilder(builder: IBehaviorBuilder): void {
+    public static registerBuilder(builder: IBehaviorBuilder): void {
         BehaviorManager._registeredBuilders[builder.type] = builder;
     }
 

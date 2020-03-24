@@ -4,10 +4,12 @@ import { BaseComponent } from "./baseComponent";
 import { IComponent } from "./IComponent";
 import { IComponentData } from './IComponentData';
 import { IComponentBuilder } from './IComponentBuilder';
+import { Vector3 } from '../math/vector3';
 
 export class SpriteComponentData implements IComponentData {
     public name: string;
     public materialName: string;
+    public origin: Vector3 = Vector3.zero;
 
     public setFromJson(json: any): void {
         if (json.name !== undefined) {
@@ -16,6 +18,10 @@ export class SpriteComponentData implements IComponentData {
 
         if (json.materialName !== undefined) {
             this.materialName = String(json.materialName);
+        }
+
+        if (json.origin !== undefined) {
+            this.origin.setFromJson(json.origin);
         }
     }
 }
@@ -42,6 +48,9 @@ export class SpriteComponent extends BaseComponent {
         super(data);
 
         this._sprite = new Sprite(data.name, data.materialName);
+        if (!data.origin.equals(Vector3.zero)) {
+            this._sprite.origin.copyFrom(data.origin);
+        }
     }
 
     public load(): void {
