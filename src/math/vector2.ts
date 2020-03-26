@@ -1,3 +1,5 @@
+import { Vector3 } from "./vector3";
+
 export class Vector2 {
     private _x: number;
     private _y: number;
@@ -39,6 +41,16 @@ export class Vector2 {
         return Math.sqrt(diff.x * diff.x + diff.y * diff.y);
     }
 
+    public set(x?: number, y?: number) {
+        if (x !== undefined) {
+            this._x = x;
+        }
+
+        if (y !== undefined) {
+            this._y = y;
+        }
+    }
+
     public copyFrom(v: Vector2): void {
         this._x = v._x;
         this._y = v._y;
@@ -50,6 +62,10 @@ export class Vector2 {
 
     public toFlat32Array(): Float32Array {
         return new Float32Array(this.toArray());
+    }
+
+    public toVector3(): Vector3 {
+        return new Vector3(this._x, this._y, 0);
     }
 
     public setFromJson(json: any): void {
@@ -93,6 +109,12 @@ export class Vector2 {
         return this;
     }
 
+    public scale(scale: number): Vector2 {
+        this._x *= scale;
+        this._y *= scale;
+
+        return this
+    }
     public clone(): Vector2 {
         return new Vector2(this._x, this._y);
     }

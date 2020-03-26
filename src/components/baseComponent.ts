@@ -29,6 +29,9 @@ export abstract class BaseComponent implements IComponentBuilder {
     public load(): void {
 
     }
+
+    updateReady() { }
+
     public update(time: number): void {
 
     }

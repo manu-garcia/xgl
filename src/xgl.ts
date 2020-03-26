@@ -25,16 +25,26 @@ import { CollisionManager } from './collision/CollisionManager';
 export class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
     private _basicShader: BasicShader;
-
     private _projection: mat4;
-
     private _previousTime: number = 0;
+    private _gameWidth: number;
+    private _gameHeight: number;
 
-    public constructor() { }
+    public constructor(width?: number, height?: number) {
+        if (width) this._gameWidth = width;
+        if (height) this._gameHeight = height;
+    }
 
     public start(): void {
 
         this._canvas = GLUtilities.init();
+
+        if (this._gameWidth !== undefined && this._gameHeight !== undefined) {
+            this._canvas.style.width = this._gameWidth + "px";
+            this._canvas.style.height = this._gameHeight + "px";
+            this._canvas.width = this._gameWidth;
+            this._canvas.height = this._gameHeight;
+        }
 
         ComponentManager.registerBuilder(new SpriteComponentBuilder());
         ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
@@ -47,15 +57,16 @@ export class XGLEngine implements IMessageHandler {
         InputManager.initialize();
         ZoneManager.initialize();
 
-        Message.subscribe('MOUSE_UP', this);
-
         this._basicShader = new BasicShader();
         this._basicShader.use();
 
-        MaterialManager.registerMaterial(new Material('crate', 'assets/textures/test.jpg', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('girl', 'assets/textures/girl.png', new Color(255, 255, 255, 255)));
+        // TODO: This should not be here. This is part of the game
+        MaterialManager.registerMaterial(new Material('grass', 'assets/textures/grass.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('duck', 'assets/textures/duck.png', new Color(255, 255, 255, 255)));
 
-        AudioManager.loadSoundFile('croack', 'assets/sounds/croack.mp3', false);
+        AudioManager.loadSoundFile('flap', 'assets/sounds/flap.mp3', false);
+        AudioManager.loadSoundFile('ting', 'assets/sounds/ting.mp3', false);
+        AudioManager.loadSoundFile('dead', 'assets/sounds/dead.mp3', false);
 
         this._projection = this.createProjection();
 
@@ -70,8 +81,10 @@ export class XGLEngine implements IMessageHandler {
      */
     public resize(): void {
         if (this._canvas !== undefined) {
-            this._canvas.width = window.innerWidth;
-            this._canvas.height = window.innerHeight;
+            if (this._gameWidth === undefined || this._gameHeight === undefined) {
+                this._canvas.width = window.innerWidth;
+                this._canvas.height = window.innerHeight;
+            }
 
             // Defining the max area of the screen
             gl.viewport(0, 0, this._canvas.width, this._canvas.height);
@@ -84,8 +97,6 @@ export class XGLEngine implements IMessageHandler {
         if (message.code === 'MOUSE_UP') {
             const context = message.context as MouseContext;
             document.title = `Pos: [${context.position.x}], [${context.position.y}]`;
-
-            // AudioManager.playSound('croack');
         }
     }
 

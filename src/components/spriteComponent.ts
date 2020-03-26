@@ -10,10 +10,20 @@ export class SpriteComponentData implements IComponentData {
     public name: string;
     public materialName: string;
     public origin: Vector3 = Vector3.zero;
+    public width: number;
+    public height: number;
 
     public setFromJson(json: any): void {
         if (json.name !== undefined) {
             this.name = String(json.name);
+        }
+
+        if (json.width !== undefined) {
+            this.width = Number(json.width);
+        }
+
+        if (json.height !== undefined) {
+            this.height = Number(json.height);
         }
 
         if (json.materialName !== undefined) {
@@ -43,11 +53,16 @@ export class SpriteComponentBuilder implements IComponentBuilder {
 export class SpriteComponent extends BaseComponent {
 
     private _sprite: Sprite;
+    private width: number;
+    private height: number;
+
 
     public constructor(data: SpriteComponentData) {
         super(data);
 
-        this._sprite = new Sprite(data.name, data.materialName);
+        this._sprite = new Sprite(data.name, data.materialName, this.width, this.height);
+        this.width = data.width;
+        this.height = data.height;
         if (!data.origin.equals(Vector3.zero)) {
             this._sprite.origin.copyFrom(data.origin);
         }

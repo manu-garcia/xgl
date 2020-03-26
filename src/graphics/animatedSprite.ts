@@ -32,6 +32,8 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
     private _assetWidth: number = 2;
     private _assetHeight: number = 2;
 
+    private _isPlaying: boolean = true;
+
     public constructor(name: string, materialName: string, width: number = 100, height: number = 100, frameWidth: number = 10, frameHeight: number = 10, frameCount: number = 1, frameSequence: number[] = []) {
         super(name, materialName, width, height);
 
@@ -44,8 +46,28 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
 
     }
 
+    public get isPlaying(): boolean {
+        return this._isPlaying;
+    }
+
     public destroy(): void {
         super.destroy();
+    }
+
+    public play() {
+        this._isPlaying = true;
+    }
+
+    public stop() {
+        this._isPlaying = false;
+    }
+
+    public setFrame(frameNumber: number) {
+        if (frameNumber >= this._frameCount) {
+            throw new Error(`Frame is out of range: ${frameNumber}, frame count ${this._frameCount}`);
+        }
+
+        this._currentFrame = frameNumber;
     }
 
     /**
@@ -78,6 +100,10 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
 
         if (!this._assetLoaded) {
             this.setupFromMaterial();
+            return;
+        }
+
+        if (!this._isPlaying) {
             return;
         }
 

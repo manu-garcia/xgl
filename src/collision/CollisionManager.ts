@@ -1,4 +1,5 @@
 import { CollisionComponent } from "../components/collisionComponent";
+import { Message } from "../message/message";
 
 export class CollisionData {
     public a: CollisionComponent;
@@ -39,7 +40,6 @@ export class CollisionManager {
 
     public static update(time: number) {
 
-        console.log('update collision manager');
         CollisionManager._totalTime += time;
 
         // TODO: do this properly. Whole function!
@@ -71,9 +71,11 @@ export class CollisionManager {
                     if (!exists) {
                         // Create a new collision
                         // onCollisionEntry
-                        let col = new CollisionData(CollisionManager._totalTime, comp, other);
+                        const col = new CollisionData(CollisionManager._totalTime, comp, other);
                         comp.onCollisionEntry(other);
                         other.onCollisionEntry(comp);
+                        Message.sendPriority(`COLLISION_ENTRY:${comp.name}`, this, col);
+                        Message.sendPriority(`COLLISION_ENTRY:${other.name}`, this, col);
                         this._collisionData.push(col);
                     }
                 }
@@ -87,19 +89,20 @@ export class CollisionManager {
             if (data.time !== CollisionManager._totalTime) {
                 // onCollisionExit
                 removeData.push(data);
-                data.a.onCollisionExit(data.b);
-                data.b.onCollisionExit(data.a);
             }
         }
 
         while (removeData.length !== 0) {
-            const index = CollisionManager._collisionData.indexOf(removeData[0]);
+            const data = removeData.shift();
+            const index = CollisionManager._collisionData.indexOf(data);
             CollisionManager._collisionData.splice(index, 1);
-            removeData.shift();
-        }
 
-        // TODO: remove this
-        document.title = CollisionManager._collisionData.length.toString();
+            data.a.onCollisionExit(data.b);
+            data.b.onCollisionExit(data.a);
+
+            Message.sendPriority(`COLLISION_EXIT:${data.a.name}`, this, data);
+            Message.sendPriority(`COLLISION_EXIT:${data.b.name}`, this, data);
+        }
     }
 
 }

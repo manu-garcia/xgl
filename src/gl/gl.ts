@@ -24,7 +24,8 @@ export class GLUtilities {
             }
         }
 
-        gl.clearColor(0, 0, 0.5, 1);
+        // TODO: This should not be here. As it is a game configuration.
+        gl.clearColor(146 / 255, 206 / 255, 247 / 255, 1);
 
         // Allows transparency in sprites
         gl.enable(gl.BLEND);
