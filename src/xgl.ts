@@ -1,4 +1,3 @@
-
 import { mat4 } from 'gl-matrix';
 
 import { GLUtilities, gl } from './gl/gl';
@@ -21,6 +20,7 @@ import { Message } from './message/message';
 import { AudioManager } from './audio/audioManager';
 import { CollisionComponentBuilder } from './components/collisionComponent';
 import { CollisionManager } from './collision/CollisionManager';
+import { PlayerBehaviorBuilder } from './behaviors/PlayerBehavior';
 
 export class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
@@ -52,6 +52,7 @@ export class XGLEngine implements IMessageHandler {
 
         BehaviorManager.registerBuilder(new RotationBehaviorBuilder());
         BehaviorManager.registerBuilder(new KeyboardMovementBehaviorBuilder());
+        BehaviorManager.registerBuilder(new PlayerBehaviorBuilder());
 
         AssetManager.initialize();
         InputManager.initialize();
