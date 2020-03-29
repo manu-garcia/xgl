@@ -9,6 +9,7 @@ import { Message } from '../message/message';
 import { AudioManager } from '../audio/audioManager';
 import { CollisionData } from '../collision/CollisionManager';
 import { MathExt } from '../math/mathExtensions';
+import { Vector3 } from '../math/vector3';
 
 export class PlayerBehaviorData implements IBehaviorData {
 
@@ -70,8 +71,13 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
     private _playerCollisionComponent: string;
     private _groundCollisionComponent: string;
     private _animatedSpriteName: string;
+    private _isPlaying: boolean = false;
+    private _initialPosition: Vector3 = Vector3.zero;
 
     private _sprite: AnimatedSpriteComponent;
+
+    // TODO: move this to configuration.
+    private _pipeNames: string[] = ["pipe1Collision_end", "pipe1Collision_middle_top", "pipe1Collision_endneg", "pipe1Collision_middle_bottom"];
 
     public constructor(data: PlayerBehaviorData) {
         super(data);
@@ -82,7 +88,13 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
         this._animatedSpriteName = data.animatedSpriteName;
 
         Message.subscribe("MOUSE_DOWN", this);
-        Message.subscribe(`COLLISION_ENTRY:${this._playerCollisionComponent}`, this);
+        Message.subscribe("COLLISION_ENTRY", this);
+
+        // Message.subscribe("GAME_READY", this);
+        Message.subscribe("GAME_RESET", this);
+        Message.subscribe("GAME_START", this);
+
+        // Message.subscribe("PLAYER_DIED", this);
     }
 
     public updateReady() {
@@ -93,16 +105,20 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
         if (this._sprite === undefined) {
             throw new Error(`AnimatedSpriteComponent named ${this._animatedSpriteName} is not attaached to the owner of this component`);
         }
+
+        // Make sure the animation plays right away.
+        this._sprite.setFrame(0);
+
+        this._initialPosition.copyFrom(this._owner.transform.position);
     }
 
     public update(time: number): void {
 
-        if (!this._isAlive) {
-            return;
-        }
-
         const seconds: number = time / 1000;
-        this._velocity.add(this._acceleration.clone().scale(seconds));
+
+        if (this._isPlaying) {
+            this._velocity.add(this._acceleration.clone().scale(seconds));
+        }
 
         // Limit velocity
         if (this._velocity.y > 400) {
@@ -134,7 +150,7 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
 
         if (this.shouldNotFlap()) {
             this._sprite.stop();
-        } else if (!this._sprite.isPlaying()) {
+        } else if (!this._sprite.isPlaying) {
             this._sprite.play();
         }
 
@@ -146,14 +162,57 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
             case "MOUSE_DOWN":
                 this.onFlap();
                 break;
-            case `COLLISION_ENTRY:${this._playerCollisionComponent}`:
-                const data: CollisionData = message.context as CollisionData;
-                if (data.a.name === this._groundCollisionComponent ||
-                    data.b.name === this._groundCollisionComponent) {
-                    this.die();
-                    this.decelerate();
-                    Message.send("PLAYER_DIED", this);
+
+            case "COLLISION_ENTRY":
+                let data: CollisionData = message.context as CollisionData;
+                if (data.a.name !== this._playerCollisionComponent && data.b.name !== this._playerCollisionComponent) {
+                    return;
                 }
+                if (data.a.name === this._groundCollisionComponent || data.b.name === this._groundCollisionComponent) {
+                    this.die();
+                    // this.decelerate();
+                } /*else if (this._pipeNames.indexOf(data.a.name) !== -1 || this._pipeNames.indexOf(data.b.name) !== -1) {
+                    this.die();
+                } else if (data.a.name === this._scoreCollisionComponent || data.b.name === this._scoreCollisionComponent) {
+                    if (this._isAlive && this._isPlaying) {
+                        this.setScore(this._score + 1);
+                        AudioManager.playSound("ting");
+                    }
+                }*/
+                break;
+
+            // Shows the tutorial, click to GAME_START
+            case "GAME_RESET":
+                Message.send("GAME_HIDE", this);
+                Message.send("RESET_HIDE", this);
+                Message.send("SPLASH_HIDE", this);
+                Message.send("TUTORIAL_SHOW", this);
+                this.reset();
+                break;
+
+            // Starts the main game.
+            case "GAME_START":
+                Message.send("GAME_SHOW", this);
+                Message.send("RESET_HIDE", this);
+                Message.send("SPLASH_HIDE", this);
+                Message.send("TUTORIAL_HIDE", this);
+                this._isPlaying = true;
+                this._isAlive = true;
+                this.start();
+                break;
+
+            // Zone is loaded, show play button/splash screen
+            case "GAME_READY":
+                Message.send("RESET_HIDE", this);
+                Message.send("TUTORIAL_HIDE", this);
+                Message.send("GAME_HIDE", this);
+                Message.send("SPLASH_SHOW", this);
+                break;
+
+            // Show score and restart button
+            case "PLAYER_DIED":
+                Message.send("RESET_SHOW", this);
+                break;
         }
     }
 
@@ -162,12 +221,32 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
     }
 
     private shouldNotFlap(): boolean {
-        return this._velocity.y > 220.0 || !this._isAlive;
+        return this._isPlaying || this._velocity.y > 220.0 || !this._isAlive;
     }
 
     private die() {
-        this._isAlive = false;
-        AudioManager.playSound('dead');
+        if (this._isPlaying) {
+            this._isAlive = false;
+            AudioManager.playSound('dead');
+            Message.send("PLAYER_DIED", this);
+        }
+    }
+
+    private reset(): void {
+        this._isAlive = true;
+        this._isPlaying = false;
+        this._sprite.owner.transform.position.copyFrom(this._initialPosition);
+        this._sprite.owner.transform.rotation.z = 0;
+        // this.setScore(0);
+
+        this._velocity.set(0, 0);
+        this._acceleration.set(0, 920);
+        this._sprite.play();
+    }
+
+    private start(): void {
+        this._isPlaying = true;
+        Message.send("PLAYER_RESET", this);
     }
 
     private decelerate() {
@@ -176,7 +255,7 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
     }
 
     private onFlap() {
-        if (this._isAlive) {
+        if (this._isAlive && this._isPlaying) {
             this._velocity.y = -280;
             AudioManager.playSound('flap');
         }

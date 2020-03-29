@@ -4,6 +4,7 @@ import { Shader } from "../gl/shader";
 import { Scene } from "./scene";
 import { IComponent } from "../components/IComponent";
 import { IBehavior } from "../behaviors/IBehavior";
+import { Vector3 } from "../math/vector3";
 
 export class SimObject {
     private _id: number;
@@ -171,6 +172,10 @@ export class SimObject {
         for (let child of this._children) {
             child.render(shader);
         }
+    }
+
+    public getWorldPosition(): Vector3 {
+        return new Vector3(this._worldMatrix.data[12], this._worldMatrix.data[13], this._worldMatrix.data[14]);
     }
 
     protected onAdded(scene: Scene): void {

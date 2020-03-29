@@ -60,9 +60,9 @@ export class SpriteComponent extends BaseComponent {
     public constructor(data: SpriteComponentData) {
         super(data);
 
-        this._sprite = new Sprite(data.name, data.materialName, this.width, this.height);
         this.width = data.width;
         this.height = data.height;
+        this._sprite = new Sprite(data.name, data.materialName, this.width, this.height);
         if (!data.origin.equals(Vector3.zero)) {
             this._sprite.origin.copyFrom(data.origin);
         }

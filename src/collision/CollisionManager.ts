@@ -51,6 +51,12 @@ export class CollisionManager {
                 if (comp === other) {
                     continue;
                 }
+
+                // if both shapes are static stop detection
+                if (comp.isStatic && other.isStatic) {
+                    continue;
+                }
+
                 if (comp.shape.intersects(other.shape)) {
                     // There is a collision
                     let exists: boolean = false;

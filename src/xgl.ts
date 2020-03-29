@@ -21,6 +21,7 @@ import { AudioManager } from './audio/audioManager';
 import { CollisionComponentBuilder } from './components/collisionComponent';
 import { CollisionManager } from './collision/CollisionManager';
 import { PlayerBehaviorBuilder } from './behaviors/PlayerBehavior';
+import { ScrollBehaviorBuilder } from './behaviors/ScrollBehavior';
 
 export class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
@@ -53,6 +54,7 @@ export class XGLEngine implements IMessageHandler {
         BehaviorManager.registerBuilder(new RotationBehaviorBuilder());
         BehaviorManager.registerBuilder(new KeyboardMovementBehaviorBuilder());
         BehaviorManager.registerBuilder(new PlayerBehaviorBuilder());
+        BehaviorManager.registerBuilder(new ScrollBehaviorBuilder());
 
         AssetManager.initialize();
         InputManager.initialize();
@@ -62,6 +64,10 @@ export class XGLEngine implements IMessageHandler {
         this._basicShader.use();
 
         // TODO: This should not be here. This is part of the game
+        MaterialManager.registerMaterial(new Material('bg', 'assets/textures/bg.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('end', 'assets/textures/end.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('middle', 'assets/textures/middle.png', new Color(255, 255, 255, 255)));
+
         MaterialManager.registerMaterial(new Material('grass', 'assets/textures/grass.png', new Color(255, 255, 255, 255)));
         MaterialManager.registerMaterial(new Material('duck', 'assets/textures/duck.png', new Color(255, 255, 255, 255)));
 
