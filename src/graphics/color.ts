@@ -71,23 +71,23 @@ export class Color {
         return new Float32Array(this.toFloatArray());
     }
 
-    public white(): Color {
+    public static white(): Color {
         return new Color(255, 255, 255, 255);
     }
 
-    public black(): Color {
+    public static black(): Color {
         return new Color(0, 0, 0, 255);
     }
 
-    public red(): Color {
+    public static red(): Color {
         return new Color(255, 0, 0, 255);
     }
 
-    public green(): Color {
+    public static green(): Color {
         return new Color(0, 255, 0, 255);
     }
 
-    public blue(): Color {
+    public static blue(): Color {
         return new Color(0, 0, 255, 255);
     }
 

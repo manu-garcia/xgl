@@ -10,6 +10,12 @@ export class Rectangle2D implements IShape2D {
     public width: number;
     public height: number;
 
+    public constructor(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {
+        this.position.x = x;
+        this.position.y = y;
+        this.width = width;
+        this.height = height;
+    }
 
     public get offset(): Vector2 {
         return new Vector2((this.width * this.origin.x), (this.height * this.origin.y));
@@ -40,13 +46,10 @@ export class Rectangle2D implements IShape2D {
     // TODO: Add support to rotated shapes
     public intersects(other: IShape2D): boolean {
         if (other instanceof Rectangle2D) {
-            if (this.pointInShape(other.position) ||
-                this.pointInShape(new Vector2(other.position.x + other.width, other.position.y)) ||
-                this.pointInShape(new Vector2(other.position.x + other.width, other.position.y + other.height)) ||
-                this.pointInShape(new Vector2(other.position.x, other.position.y + other.height))
-            ) {
-                return true;
-            }
+            let a = this.getExtents(this);
+            let b = this.getExtents(other);
+
+            return (a.position.x <= b.width && a.width >= b.position.x) && (a.position.y <= b.height && a.height >= b.position.y);
         }
 
         if (other instanceof Circle2D) {
@@ -74,5 +77,16 @@ export class Rectangle2D implements IShape2D {
 
         return false;
     }
+
+    private getExtents(shape: Rectangle2D): Rectangle2D {
+        let x = shape.width < 0 ? shape.position.x - shape.width : shape.position.x;
+        let y = shape.height < 0 ? shape.position.y - shape.height : shape.position.y;
+
+        let extentX = shape.width < 0 ? shape.position.x : shape.position.x + shape.width;
+        let extentY = shape.height < 0 ? shape.position.y : shape.position.y + shape.height;
+
+        return new Rectangle2D(x, y, extentX, extentY);
+    }
+
 
 }

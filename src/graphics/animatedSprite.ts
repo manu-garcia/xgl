@@ -15,6 +15,36 @@ class UVInfo {
     }
 }
 
+export class AnimatedSpriteInfo {
+
+    /** The name of this sprite */
+    public name: string;
+
+    /** The name of the material used by this sprite */
+    public materialName: string;
+
+    /** The width of this sprite. */
+    public width: number = 100;
+
+    /** The height of this sprite. */
+    public height: number = 100;
+
+    /** The frame width of this sprite. */
+    public frameWidth: number = 10;
+
+    /** The frame height of this sprite. */
+    public frameHeight: number = 10;
+
+    /** The number of frames to be animated. */
+    public frameCount: number = 1;
+
+    /** The sequence of frame indexes to be played. */
+    public frameSequence: number[] = [];
+
+    /** The number of milliseconds each frame takes. */
+    public frameTime: number = 60;
+}
+
 export class AnimatedSprite extends Sprite implements IMessageHandler {
 
     private _frameWidth: number;
@@ -22,8 +52,7 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
     private _frameCount: number;
     private _frameSequence: number[];
 
-    // TODO: Make this configurable
-    private _frameTime: number = 150;
+    private _frameTime: number = 33;
     private _frameUVs: UVInfo[] = [];
 
     private _currentFrame: number = 0;
@@ -34,13 +63,14 @@ export class AnimatedSprite extends Sprite implements IMessageHandler {
 
     private _isPlaying: boolean = true;
 
-    public constructor(name: string, materialName: string, width: number = 100, height: number = 100, frameWidth: number = 10, frameHeight: number = 10, frameCount: number = 1, frameSequence: number[] = []) {
-        super(name, materialName, width, height);
+    public constructor(info: AnimatedSpriteInfo) {
+        super(info.name, info.materialName, info.width, info.height);
 
-        this._frameWidth = frameWidth;
-        this._frameHeight = frameHeight;
-        this._frameCount = frameCount;
-        this._frameSequence = frameSequence;
+        this._frameWidth = info.frameWidth;
+        this._frameHeight = info.frameHeight;
+        this._frameCount = info.frameCount;
+        this._frameSequence = info.frameSequence;
+        this._frameTime = info.frameTime;
 
         Message.subscribe(MESSAGE_ASSET_LOADER_ASSET_LOADED + this._material.diffuseTextureName, this);
 

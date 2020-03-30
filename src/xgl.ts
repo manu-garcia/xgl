@@ -22,65 +22,82 @@ import { CollisionComponentBuilder } from './components/collisionComponent';
 import { CollisionManager } from './collision/CollisionManager';
 import { PlayerBehaviorBuilder } from './behaviors/PlayerBehavior';
 import { ScrollBehaviorBuilder } from './behaviors/ScrollBehavior';
+import { BitmapFontManager } from './graphics/BitmapFontManager';
+import { BitmapTextComponentBuilder } from './components/BitmapTextComponent';
+import { MouseClickBehaviorBuilder } from './behaviors/MouseClickBehavior';
+import { VisibilityOnMessageBehaviorBuilder } from './behaviors/VisibilityOnMessageBehavior';
+import { Matrix4x4 } from './math/matrix4x4';
+import { Vector2 } from './math/vector2';
 
 export class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
     private _basicShader: BasicShader;
-    private _projection: mat4;
+    private _projection: Matrix4x4;
     private _previousTime: number = 0;
     private _gameWidth: number;
     private _gameHeight: number;
+
+    private _isFirstUpdate: boolean = true;
+    private _aspect: number;
 
     public constructor(width?: number, height?: number) {
         if (width) this._gameWidth = width;
         if (height) this._gameHeight = height;
     }
 
-    public start(): void {
+    public start(elementName?: string): void {
 
-        this._canvas = GLUtilities.init();
+        this._canvas = GLUtilities.init(elementName);
 
         if (this._gameWidth !== undefined && this._gameHeight !== undefined) {
-            this._canvas.style.width = this._gameWidth + "px";
-            this._canvas.style.height = this._gameHeight + "px";
-            this._canvas.width = this._gameWidth;
-            this._canvas.height = this._gameHeight;
+            this._aspect = this._gameWidth / this._gameHeight;
         }
 
         ComponentManager.registerBuilder(new SpriteComponentBuilder());
         ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
         ComponentManager.registerBuilder(new CollisionComponentBuilder());
+        ComponentManager.registerBuilder(new BitmapTextComponentBuilder());
 
         BehaviorManager.registerBuilder(new RotationBehaviorBuilder());
         BehaviorManager.registerBuilder(new KeyboardMovementBehaviorBuilder());
         BehaviorManager.registerBuilder(new PlayerBehaviorBuilder());
         BehaviorManager.registerBuilder(new ScrollBehaviorBuilder());
+        BehaviorManager.registerBuilder(new MouseClickBehaviorBuilder());
+        BehaviorManager.registerBuilder(new VisibilityOnMessageBehaviorBuilder());
 
         AssetManager.initialize();
-        InputManager.initialize();
+        InputManager.initialize(this._canvas);
         ZoneManager.initialize();
 
         this._basicShader = new BasicShader();
         this._basicShader.use();
 
+        BitmapFontManager.addFont("default", "assets/fonts/text.txt");
+        BitmapFontManager.load();
+
         // TODO: This should not be here. This is part of the game
         MaterialManager.registerMaterial(new Material('bg', 'assets/textures/bg.png', new Color(255, 255, 255, 255)));
         MaterialManager.registerMaterial(new Material('end', 'assets/textures/end.png', new Color(255, 255, 255, 255)));
         MaterialManager.registerMaterial(new Material('middle', 'assets/textures/middle.png', new Color(255, 255, 255, 255)));
-
         MaterialManager.registerMaterial(new Material('grass', 'assets/textures/grass.png', new Color(255, 255, 255, 255)));
         MaterialManager.registerMaterial(new Material('duck', 'assets/textures/duck.png', new Color(255, 255, 255, 255)));
+
+        MaterialManager.registerMaterial(new Material('playbtn', 'assets/textures/playbtn.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('restartbtn', 'assets/textures/restartbtn.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('score', 'assets/textures/score.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('title', 'assets/textures/title.png', new Color(255, 255, 255, 255)));
+        MaterialManager.registerMaterial(new Material('tutorial', 'assets/textures/tutorial.png', new Color(255, 255, 255, 255)));
 
         AudioManager.loadSoundFile('flap', 'assets/sounds/flap.mp3', false);
         AudioManager.loadSoundFile('ting', 'assets/sounds/ting.mp3', false);
         AudioManager.loadSoundFile('dead', 'assets/sounds/dead.mp3', false);
 
-        this._projection = this.createProjection();
-
-        ZoneManager.changeZone(0);
+        this._projection = Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
 
         this.resize();
-        this.loop();
+
+        // Begin preloading phase waiting for all assets to be loaded before starting the game
+        this.preloading();
     }
 
     /**
@@ -91,12 +108,33 @@ export class XGLEngine implements IMessageHandler {
             if (this._gameWidth === undefined || this._gameHeight === undefined) {
                 this._canvas.width = window.innerWidth;
                 this._canvas.height = window.innerHeight;
+                gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+                this._projection = Matrix4x4.orthographic(0, window.innerWidth, window.innerHeight, 0, -100.0, 100.0);
+            } else {
+                let newWidth = window.innerWidth;
+                let newHeight = window.innerHeight;
+                let newWidthToHeight = newWidth / newHeight;
+                const gameArea = document.getElementById("gameArea");
+
+                if (newWidthToHeight > this._aspect) {
+                    newWidth = newHeight * this._aspect;
+                } else {
+                    newHeight = newWidth * this._aspect;
+                }
+
+                gameArea.style.width = newWidth + 'px';
+                gameArea.style.height = newHeight + 'px';
+                gameArea.style.marginTop = (-newHeight / 2) + 'px';
+                gameArea.style.marginLeft = (-newWidth / 2) + 'px';
+
+                this._canvas.width = newWidth;
+                this._canvas.height = newHeight;
+                gl.viewport(0, 0, newWidth, newHeight);
+                this._projection = Matrix4x4.orthographic(0, this._gameWidth, this._gameHeight, 0, -100.0, 100.0);
+
+                const resolutionScale = new Vector2(newWidth / this._gameWidth, newHeight / this._gameHeight);
+                InputManager.setResolutionScale(resolutionScale);
             }
-
-            // Defining the max area of the screen
-            gl.viewport(0, 0, this._canvas.width, this._canvas.height);
-            this._projection = this.createProjection();
-
         }
     }
 
@@ -108,8 +146,29 @@ export class XGLEngine implements IMessageHandler {
     }
 
     private loop(): void {
+        if (this._isFirstUpdate) {
+
+        }
+
         this.update();
         this.render();
+
+        requestAnimationFrame(this.loop.bind(this));
+    }
+
+    private preloading() {
+        // Make sure we always update message bus
+        MessageBus.update(0);
+
+        if (!BitmapFontManager.updateReady()) {
+            requestAnimationFrame(this.preloading.bind(this));
+            return;
+        }
+
+        // Load up Zone. Make this configurable
+        ZoneManager.changeZone(0);
+
+        this.loop();
     }
 
     private update(): void {
@@ -128,9 +187,7 @@ export class XGLEngine implements IMessageHandler {
         ZoneManager.render(this._basicShader);
 
         const projectionPosition = this._basicShader.getUniformLocation('u_projection');
-        gl.uniformMatrix4fv(projectionPosition, false, this._projection);
-
-        requestAnimationFrame(this.loop.bind(this));
+        gl.uniformMatrix4fv(projectionPosition, false, this._projection.toFloat32Array());
     }
 
     private createProjection(): mat4 {

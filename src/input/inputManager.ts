@@ -28,8 +28,9 @@ export class InputManager {
     private static _previousMouseY: number;
     private static _letfDown: boolean = false;
     private static _rightDown: boolean = false;
+    private static _resolutionScale: Vector2 = Vector2.one;
 
-    public static initialize(): void {
+    public static initialize(viewport: HTMLCanvasElement): void {
         for (let i = 0; i < 255; i++) {
             InputManager._keys[i] = false;
         }
@@ -37,9 +38,9 @@ export class InputManager {
         window.addEventListener('keydown', InputManager.onKeyDown);
         window.addEventListener('keyup', InputManager.onKeyUp);
 
-        window.addEventListener('mousemove', InputManager.onMouseMove);
-        window.addEventListener('mousedown', InputManager.onMouseDown);
-        window.addEventListener('mouseup', InputManager.onMouseUp);
+        viewport.addEventListener('mousemove', InputManager.onMouseMove);
+        viewport.addEventListener('mousedown', InputManager.onMouseDown);
+        viewport.addEventListener('mouseup', InputManager.onMouseUp);
     }
 
     public static isKeyDown(key: Keys): boolean {
@@ -50,26 +51,27 @@ export class InputManager {
         return new Vector2(this._mouseX, this._mouseY);
     }
 
+    public static setResolutionScale(scale: Vector2) {
+        InputManager._resolutionScale.copyFrom(scale);
+    }
+
     private static onKeyDown(event: KeyboardEvent): boolean {
         InputManager._keys[event.keyCode] = true;
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
+        return true;
     }
 
     private static onKeyUp(event: KeyboardEvent): boolean {
         InputManager._keys[event.keyCode] = false;
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
+        return true;
     }
 
     private static onMouseMove(event: MouseEvent): void {
         InputManager._previousMouseX = InputManager._mouseX;
         InputManager._previousMouseY = InputManager._mouseY;
 
-        InputManager._mouseX = event.clientX;
-        InputManager._mouseY = event.clientY;
+        let rect = (event.target as HTMLElement).getBoundingClientRect();
+        InputManager._mouseX = (event.clientX - Math.round(rect.left)) * (1 / InputManager._resolutionScale.x);
+        InputManager._mouseY = (event.clientY - Math.round(rect.top)) * (1 / InputManager._resolutionScale.y);
     }
 
     private static onMouseDown(event: MouseEvent): void {
