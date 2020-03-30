@@ -236,7 +236,7 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
     }
 
     private die() {
-        if (this._isPlaying) {
+        if (this._isPlaying && this._isAlive) {
             this._isAlive = false;
             AudioManager.playSound('dead');
             Message.send("PLAYER_DIED", this);
