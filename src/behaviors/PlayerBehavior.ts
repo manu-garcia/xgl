@@ -152,7 +152,7 @@ export class PlayerBehavior extends BaseBehavior implements IMessageHandler {
             }
         }
 
-        if (this.isFalling || !this._isAlive) {
+        if (this.isFalling() || !this._isAlive) {
             this._owner.transform.rotation.z += MathExt.degToRad(480.0) * seconds;
             if (this._owner.transform.rotation.z > MathExt.degToRad(90)) {
                 this._owner.transform.rotation.z = MathExt.degToRad(90);
