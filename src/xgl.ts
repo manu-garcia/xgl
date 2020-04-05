@@ -8,19 +8,17 @@ import { AssetManager } from './assets/assetManager';
 import { MessageBus } from './message/messageBus';
 import { MaterialManager } from './graphics/materialManager';
 import { Material } from './graphics/material';
-import { Color } from './graphics/color';
 import { ZoneManager } from './world/zoneManager';
 import { ComponentManager } from './components/componentManager';
 import { BehaviorManager } from './behaviors/behaviorManager';
 import { RotationBehaviorBuilder } from './behaviors/rotationBehavior';
 import { KeyboardMovementBehaviorBuilder } from './behaviors/keyboardMovementBehavior';
-import { InputManager, MouseContext } from './input/inputManager';
+import { InputManager } from './input/inputManager';
 import { IMessageHandler } from './message/IMessageHandler';
 import { Message } from './message/message';
 import { AudioManager } from './audio/audioManager';
 import { CollisionComponentBuilder } from './components/collisionComponent';
 import { CollisionManager } from './collision/CollisionManager';
-import { PlayerBehaviorBuilder } from './behaviors/PlayerBehavior';
 import { ScrollBehaviorBuilder } from './behaviors/ScrollBehavior';
 import { BitmapFontManager } from './graphics/BitmapFontManager';
 import { BitmapTextComponentBuilder } from './components/BitmapTextComponent';
@@ -28,8 +26,11 @@ import { MouseClickBehaviorBuilder } from './behaviors/MouseClickBehavior';
 import { VisibilityOnMessageBehaviorBuilder } from './behaviors/VisibilityOnMessageBehavior';
 import { Matrix4x4 } from './math/matrix4x4';
 import { Vector2 } from './math/vector2';
+import { IBehaviorBuilder } from './behaviors/IBehaviorBuilder';
+import { IBitmapFontAsset } from './graphics/IBitmapFontAsset';
+import { ISoundAsset } from './audio/ISoundAsset';
 
-export class XGLEngine implements IMessageHandler {
+export abstract class XGLEngine implements IMessageHandler {
     private _canvas: HTMLCanvasElement;
     private _basicShader: BasicShader;
     private _projection: Matrix4x4;
@@ -53,17 +54,9 @@ export class XGLEngine implements IMessageHandler {
             this._aspect = this._gameWidth / this._gameHeight;
         }
 
-        ComponentManager.registerBuilder(new SpriteComponentBuilder());
-        ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
-        ComponentManager.registerBuilder(new CollisionComponentBuilder());
-        ComponentManager.registerBuilder(new BitmapTextComponentBuilder());
-
-        BehaviorManager.registerBuilder(new RotationBehaviorBuilder());
-        BehaviorManager.registerBuilder(new KeyboardMovementBehaviorBuilder());
-        BehaviorManager.registerBuilder(new PlayerBehaviorBuilder());
-        BehaviorManager.registerBuilder(new ScrollBehaviorBuilder());
-        BehaviorManager.registerBuilder(new MouseClickBehaviorBuilder());
-        BehaviorManager.registerBuilder(new VisibilityOnMessageBehaviorBuilder());
+        this.registerComponents();
+        this.registerBuilders();
+        this.registerBehaviors();
 
         AssetManager.initialize();
         InputManager.initialize(this._canvas);
@@ -72,25 +65,9 @@ export class XGLEngine implements IMessageHandler {
         this._basicShader = new BasicShader();
         this._basicShader.use();
 
-        BitmapFontManager.addFont("default", "assets/fonts/text.txt");
-        BitmapFontManager.load();
-
-        // TODO: This should not be here. This is part of the game
-        MaterialManager.registerMaterial(new Material('bg', 'assets/textures/bg.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('end', 'assets/textures/end.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('middle', 'assets/textures/middle.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('grass', 'assets/textures/grass.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('duck', 'assets/textures/duck.png', new Color(255, 255, 255, 255)));
-
-        MaterialManager.registerMaterial(new Material('playbtn', 'assets/textures/playbtn.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('restartbtn', 'assets/textures/restartbtn.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('score', 'assets/textures/score.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('title', 'assets/textures/title.png', new Color(255, 255, 255, 255)));
-        MaterialManager.registerMaterial(new Material('tutorial', 'assets/textures/tutorial.png', new Color(255, 255, 255, 255)));
-
-        AudioManager.loadSoundFile('flap', 'assets/sounds/flap.mp3', false);
-        AudioManager.loadSoundFile('ting', 'assets/sounds/ting.mp3', false);
-        AudioManager.loadSoundFile('dead', 'assets/sounds/dead.mp3', false);
+        this.registerFonts();
+        this.registerMaterials();
+        this.registersounds();
 
         this._projection = Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
 
@@ -114,6 +91,7 @@ export class XGLEngine implements IMessageHandler {
                 let newWidth = window.innerWidth;
                 let newHeight = window.innerHeight;
                 let newWidthToHeight = newWidth / newHeight;
+                // TODO: Game area should be not hardcoded here
                 const gameArea = document.getElementById("gameArea");
 
                 if (newWidthToHeight > this._aspect) {
@@ -139,10 +117,59 @@ export class XGLEngine implements IMessageHandler {
     }
 
     public onMessage(message: Message): void {
-        if (message.code === 'MOUSE_UP') {
-            const context = message.context as MouseContext;
-            document.title = `Pos: [${context.position.x}], [${context.position.y}]`;
-        }
+        // if (message.code === 'MOUSE_UP') {
+        //     const context = message.context as MouseContext;
+        //     document.title = `Pos: [${context.position.x}], [${context.position.y}]`;
+        // }
+    }
+
+    protected abstract getGameBehaviorBuilders(): IBehaviorBuilder[];
+    protected abstract getGameBitmapFonts(): IBitmapFontAsset[];
+    protected abstract getGameMaterials(): Material[];
+    protected abstract getGameSounds(): ISoundAsset[];
+
+    private registerComponents() {
+        ComponentManager.registerBuilder(new SpriteComponentBuilder());
+        ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
+        ComponentManager.registerBuilder(new CollisionComponentBuilder());
+        ComponentManager.registerBuilder(new BitmapTextComponentBuilder());
+    }
+
+    private registerBuilders() {
+        ComponentManager.registerBuilder(new SpriteComponentBuilder());
+        ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
+        ComponentManager.registerBuilder(new CollisionComponentBuilder());
+        ComponentManager.registerBuilder(new BitmapTextComponentBuilder());
+    }
+
+    private registerBehaviors() {
+
+        BehaviorManager.registerBuilder(new RotationBehaviorBuilder());
+        BehaviorManager.registerBuilder(new KeyboardMovementBehaviorBuilder());
+
+        // This is a very specific scroll, might need a better name
+        BehaviorManager.registerBuilder(new ScrollBehaviorBuilder());
+        BehaviorManager.registerBuilder(new MouseClickBehaviorBuilder());
+        BehaviorManager.registerBuilder(new VisibilityOnMessageBehaviorBuilder());
+
+        const gameBehaviorBuilders: IBehaviorBuilder[] = this.getGameBehaviorBuilders() || [];
+        gameBehaviorBuilders.forEach(behaviorBuilder => BehaviorManager.registerBuilder(behaviorBuilder));
+    }
+
+    private registerFonts() {
+        const gameBitmapFonts: IBitmapFontAsset[] = this.getGameBitmapFonts() || [];
+        gameBitmapFonts.forEach(font => BitmapFontManager.addFont(font.name, font.src));
+        BitmapFontManager.load();
+    }
+
+    private registerMaterials() {
+        const gameMaterials: Material[] = this.getGameMaterials() || [];
+        gameMaterials.forEach(material => MaterialManager.registerMaterial(material));
+    }
+
+    private registersounds() {
+        const gameSounds: ISoundAsset[] = this.getGameSounds() || [];
+        gameSounds.forEach(sound => AudioManager.loadSoundFile(sound.name, sound.src, sound.loop));
     }
 
     private loop(): void {
