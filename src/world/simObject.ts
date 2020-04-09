@@ -59,7 +59,7 @@ export class SimObject {
         child.onAdded(this._scene);
     }
 
-    public removeChaild(child: SimObject): void {
+    public removeChild(child: SimObject): void {
         const index = this._children.indexOf(child);
         if (index !== -1) {
             child._parent = undefined!;
