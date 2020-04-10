@@ -92,6 +92,8 @@ export class CollisionComponent extends BaseComponent {
 
         // Tell the collision manager we exists
         CollisionManager.registerCollisionComponent(this);
+
+        this._shape.load();
     }
 
     public update(time: number) {
@@ -102,7 +104,7 @@ export class CollisionComponent extends BaseComponent {
     }
 
     public render(shader: Shader): void {
-        // this._shape.draw(shader, this.owner.worldMatrix); 
+        this._shape.draw(shader, this.owner.worldMatrix);
         super.render(shader);
     }
 

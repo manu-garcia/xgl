@@ -1,6 +1,8 @@
 import { IShape2D } from "./IShape2D";
 import { Vector2 } from "../../math/vector2";
 import { Rectangle2D } from "./rectangle2D";
+import { Shader } from "../../gl/shader";
+import { Matrix4x4 } from "../../math/matrix4x4";
 
 export class Circle2D implements IShape2D {
 
@@ -56,5 +58,8 @@ export class Circle2D implements IShape2D {
         }
         return false;
     }
+
+    public draw(shader: Shader, model: Matrix4x4): void { }
+    public load(): void { }
 
 }

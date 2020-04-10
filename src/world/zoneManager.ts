@@ -19,7 +19,7 @@ export class ZoneManager implements IMessageHandler {
 
         ZoneManager._inst = new ZoneManager();
 
-        // Temporary
+        // TODO: This is part of the game, should not be here
         ZoneManager._registeredZones[0] = "assets/zones/testZone.json";
     }
 
